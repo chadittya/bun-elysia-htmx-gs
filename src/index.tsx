@@ -1,10 +1,42 @@
 import { Elysia } from "elysia";
 import { html, Html } from "@elysiajs/html";
 
-// https://youtu.be/3F7cqnZrzA8?si=ZyrOEJZsogMnFgmG&t=916
-
 // this will be a database
 let counter = 0;
+
+interface CounterButtonComponentProps {
+  url: string;
+  target: string;
+  icon: string;
+}
+
+const CounterButtonComponent = ({
+  url,
+  target,
+  icon,
+}: CounterButtonComponentProps) => {
+  return (
+    <button
+      class="p-5 rounded bg-gray-300"
+      hx-post={url}
+      hx-swap="outerHTML"
+      hx-target={target}
+    >
+      {icon}
+    </button>
+  );
+};
+
+const CounterComponent = ({ counter, id }: { counter: number; id: string }) => {
+  return (
+    <div
+      id={id}
+      class={counter > 0 ? "bg-green-300" : counter < 0 ? "bg-red-300" : ""}
+    >
+      {counter}
+    </div>
+  );
+};
 
 const app = new Elysia()
   .use(html())
@@ -24,23 +56,9 @@ const app = new Elysia()
           <div class="container mx-auto">
             <h1 class="text-3xl font-bold underline">HTMX Counter Example</h1>
             <div class="mt-10 flex gap-5 items-center">
-              <button
-                class="p-5 rounded bg-gray-300"
-                hx-post="/dec"
-                hx-swap="outerHTML"
-                hx-target="#counter"
-              >
-                -
-              </button>
-              <div id="counter">{counter}</div>
-              <button
-                class="p-5 rounded bg-gray-300"
-                hx-post="/inc"
-                hx-swap="outerHTML"
-                hx-target="#counter"
-              >
-                +
-              </button>
+              <CounterButtonComponent url="/dec" target="#counter" icon="-" />
+              <CounterComponent id="counter" counter={counter} />
+              <CounterButtonComponent url="/inc" target="#counter" icon="+" />
             </div>
           </div>
         </body>
@@ -49,11 +67,11 @@ const app = new Elysia()
   })
   .post("/dec", () => {
     counter--;
-    return <div id="counter">{counter}</div>;
+    return <CounterComponent id="counter" counter={counter} />;
   })
   .post("/inc", () => {
     counter++;
-    return <div id="counter">{counter}</div>;
+    return <CounterComponent id="counter" counter={counter} />;
   })
   .listen(3000);
 
